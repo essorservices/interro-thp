@@ -9,18 +9,19 @@ import { scoreOf } from "@/lib/score";
 import { QuestionCorrection, StatementCorrection } from "./Corrections";
 import M from "./M";
 import Timer from "./Timer";
+import TopBar from "./TopBar";
 
-/** One paper you can answer, correct and self-mark. Answers are kept in localStorage. */
+/** One interro you can answer, correct and self-mark. Answers are kept in localStorage. */
 export default function ExamRunner({ index }: { index: number }) {
   const exam = EXAMS[index];
   const p = useProgress(index);
   const done = p.corrected;
   const score = scoreOf(index, p);
-  const paperRef = useRef<HTMLElement>(null);
+  const sheetRef = useRef<HTMLElement>(null);
 
   const correct = () => {
     updateProgress(index, (prev) => ({ ...prev, corrected: true }));
-    requestAnimationFrame(() => paperRef.current?.scrollIntoView({ block: "start" }));
+    requestAnimationFrame(() => sheetRef.current?.scrollIntoView({ block: "start" }));
   };
 
   const setSelf = (j: number, value: 0 | 1) =>
@@ -33,148 +34,152 @@ export default function ExamRunner({ index }: { index: number }) {
 
   return (
     <>
-      <div className="exam-bar">
-        <Link href="/">← All papers</Link>
+      <TopBar title={`Interro ${index + 1}`} subtitle={exam.title} sticky>
         <Timer />
-      </div>
+      </TopBar>
 
-      <main className="paper" ref={paperRef}>
-        <div className="phead">
-          <span>1CS · Computability Theory</span>
-          <span>Mock Interro {index + 1} / 10</span>
-        </div>
-        <p className="focus">Focus: {exam.focus}</p>
-
+      <main className="sheet" ref={sheetRef}>
         {done && (
-          <div className="score">
-            <div>
-              <div className="k">Part I</div>
-              <div className="v">
-                {score.part1}
-                <small>/10</small>
+          <section className="result" aria-label="Your score">
+            <p className="result-total">
+              <span className="big">{score.total}</span>
+              <span className="of">/ 20</span>
+            </p>
+            <dl className="result-parts">
+              <div>
+                <dt>Part I</dt>
+                <dd>{score.part1} / 10</dd>
               </div>
-            </div>
-            <div>
-              <div className="k">Part II</div>
-              <div className="v">
-                {score.part2}
-                <small>/10</small>
+              <div>
+                <dt>Part II</dt>
+                <dd>
+                  {score.part2} / 10 <small>· {score.marked}/5 marked</small>
+                </dd>
               </div>
-              <div className="note">self-marked {score.marked}/5</div>
-            </div>
-            <div className="total">
-              <div className="k">Total</div>
-              <div className="v">
-                {score.total}
-                <small>/20</small>
-              </div>
-            </div>
-          </div>
+            </dl>
+          </section>
         )}
 
-        <div className="dur">Duration 1h</div>
-
-        <div className="band">Part I (sur 10 points)</div>
-        <p className="instr">
-          Check the correct answers
-          <span>{done ? "Green = handled correctly, red = mistake." : "0.5 per statement."}</span>
-        </p>
-        <ol className="st">
-          {exam.p1.map((id, j) => {
-            const s = STATEMENTS[id];
-            const checked = !!p.checks[j];
-            const right = checked === s.truth;
-            return (
-              <li key={id} className={done ? (right ? "ok" : "bad") : undefined}>
-                <label>
-                  <input
-                    type="checkbox"
-                    id={`e${index}-s${j}`}
-                    checked={checked}
-                    disabled={done}
-                    onChange={(e) => {
-                      const value = e.target.checked;
-                      updateProgress(index, (prev) => ({ ...prev, checks: { ...prev.checks, [j]: value } }));
-                    }}
-                  />
-                  <M>{s.text}</M>
-                </label>
-                {done && (
-                  <div className="verdict-row">
-                    <span className="mark" aria-label={right ? "You got it right" : "You got it wrong"}>
-                      {right ? "✓" : "✗"}
+        <section className="part">
+          <h2>
+            Part I <span>Tick the true statements · 10 pts</span>
+          </h2>
+          <ol className="st">
+            {exam.p1.map((id, j) => {
+              const s = STATEMENTS[id];
+              const checked = !!p.checks[j];
+              const right = checked === s.truth;
+              return (
+                <li key={id} className={done ? (right ? "ok" : "bad") : undefined}>
+                  <label className={done ? "st-row marked" : "st-row"}>
+                    <input
+                      type="checkbox"
+                      id={`e${index}-s${j}`}
+                      checked={checked}
+                      disabled={done}
+                      onChange={(e) => {
+                        const value = e.target.checked;
+                        updateProgress(index, (prev) => ({ ...prev, checks: { ...prev.checks, [j]: value } }));
+                      }}
+                    />
+                    <span className="st-text">
+                      <span className="st-num">{j + 1}.</span>
+                      <M>{s.text}</M>
                     </span>
-                    <StatementCorrection s={s} />
-                  </div>
-                )}
-              </li>
-            );
-          })}
-        </ol>
+                    {done && (
+                      <span className={right ? "st-mark ok" : "st-mark bad"} aria-label={right ? "You got it right" : "You got it wrong"}>
+                        {right ? "✓" : "✗"}
+                      </span>
+                    )}
+                  </label>
+                  {done && <StatementCorrection s={s} />}
+                </li>
+              );
+            })}
+          </ol>
+        </section>
 
-        <div className="band">
-          Part II (sur 10 points)<small>(2 points / correct answer)</small>
-        </div>
-        <div className="recall">
-          <M block>{RECALL}</M>
-          {exam.tm && <M block>{TM_RECALL}</M>}
-        </div>
-        <ol className="qs">
-          {exam.p2.map((q, j) => (
-            <li key={j}>
-              <M block>{q.q}</M>
-              {q.code && <pre className="tm">{q.code}</pre>}
-              <div className="ansrow">
-                <label htmlFor={`e${index}-q${j}`}>Your answer →</label>
+        <section className="part">
+          <h2>
+            Part II <span>2 pts per answer · 10 pts</span>
+          </h2>
+          <div className="recall">
+            <M block>{RECALL}</M>
+            {exam.tm && <M block>{TM_RECALL}</M>}
+          </div>
+          <ol className="qs">
+            {exam.p2.map((q, j) => (
+              <li key={j}>
+                <div className="q-head">
+                  <span className="q-num">{j + 1}</span>
+                  <M block className="q-text">
+                    {q.q}
+                  </M>
+                </div>
+                {q.code && <pre className="tm">{q.code}</pre>}
                 <input
                   type="text"
+                  className="answer-input"
                   id={`e${index}-q${j}`}
+                  aria-label={`Your answer to question ${j + 1}`}
+                  placeholder="Your answer"
                   value={p.answers[j] ?? ""}
                   readOnly={done}
                   autoComplete="off"
+                  autoCapitalize="off"
                   spellCheck={false}
                   onChange={(e) => {
                     const value = e.target.value;
                     updateProgress(index, (prev) => ({ ...prev, answers: { ...prev.answers, [j]: value } }));
                   }}
                 />
-              </div>
-              {done && (
-                <>
-                  <QuestionCorrection q={q} />
-                  <div className="self">
-                    Mark yourself:
-                    <button type="button" className="btn yes" aria-pressed={p.self[j] === 1} onClick={() => setSelf(j, 1)}>
-                      Correct (2 pts)
-                    </button>
-                    <button type="button" className="btn no" aria-pressed={p.self[j] === 0} onClick={() => setSelf(j, 0)}>
-                      Wrong
-                    </button>
-                  </div>
-                </>
-              )}
-            </li>
-          ))}
-        </ol>
+                {done && (
+                  <>
+                    <QuestionCorrection q={q} />
+                    <div className="self" role="group" aria-label={`Mark your answer to question ${j + 1}`}>
+                      <button
+                        type="button"
+                        className="seg yes"
+                        aria-pressed={p.self[j] === 1}
+                        onClick={() => setSelf(j, 1)}
+                      >
+                        I got it · 2 pts
+                      </button>
+                      <button type="button" className="seg no" aria-pressed={p.self[j] === 0} onClick={() => setSelf(j, 0)}>
+                        I missed it
+                      </button>
+                    </div>
+                  </>
+                )}
+              </li>
+            ))}
+          </ol>
+        </section>
 
         <div className="actions">
-          {!done && (
-            <button type="button" className="btn primary" onClick={correct}>
-              Correct my paper
-            </button>
-          )}
-          <button type="button" className="btn" onClick={() => updateProgress(index, () => EMPTY_PROGRESS)}>
-            {done ? "Retake this paper" : "Clear my answers"}
-          </button>
-          {done && (
-            <Link className="btn" href={`/exam/${index + 1}/solution`}>
-              Full solution
-            </Link>
-          )}
-          {index < EXAMS.length - 1 && (
-            <Link className="btn" href={`/exam/${index + 2}`}>
-              Next paper →
-            </Link>
+          {done ? (
+            <>
+              <Link className="btn primary" href={`/exam/${index + 1}/solution`}>
+                Full solution
+              </Link>
+              {index < EXAMS.length - 1 && (
+                <Link className="btn" href={`/exam/${index + 2}`}>
+                  Next interro
+                </Link>
+              )}
+              <button type="button" className="btn ghost" onClick={() => updateProgress(index, () => EMPTY_PROGRESS)}>
+                Retake this interro
+              </button>
+            </>
+          ) : (
+            <>
+              <button type="button" className="btn primary" onClick={correct}>
+                Correct my paper
+              </button>
+              <button type="button" className="btn ghost" onClick={() => updateProgress(index, () => EMPTY_PROGRESS)}>
+                Clear my answers
+              </button>
+            </>
           )}
         </div>
       </main>

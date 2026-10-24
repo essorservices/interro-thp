@@ -1,6 +1,6 @@
 # Computability Mock Interros
 
-Ten practice papers for the 1CS computability interro, in the 2025 format
+Ten practice interros for the 1CS computability interro, in the 2025 format
 (1 h · Part I: tick the true statements · Part II: 5 short answers), each with a full correction.
 
 ## Run it
@@ -23,10 +23,10 @@ on each device.
 
 | Page | What it does |
 | --- | --- |
-| `/` | The 10 papers, with your last score on each. Reading theme switch (Auto / Light / Sepia / Dark) in the header. |
-| `/exam/1` … `/exam/10` | Take a paper: 60-minute timer, tick boxes, answer boxes, **Correct my paper**, then self-mark Part II |
+| `/` | The 10 interros, with your last score on each |
+| `/exam/1` … `/exam/10` | Take an interro: 60-minute timer, tick boxes, answer boxes, **Correct my paper**, then self-mark Part II |
 | `/exam/1/solution` … | Full correction: answer key, verdict + justification for every statement, the corrected version of every false one, and a worked solution + numeric check for every Part II question. Printable. |
-| `/formulas` | Formula sheet (sg, ∸, Car, μ, recursion scheme, TM, Gödel numbering) |
+| `/formulas` | Formulas (sg, ∸, Car, μ, recursion scheme, TM, Gödel numbering) |
 
 Answers and scores are saved in your browser (localStorage).
 
@@ -39,5 +39,5 @@ Answers and scores are saved in your browser (localStorage).
 Text uses a small markup: `nsg` → sg with an overline, `Σ[i=1..x]` → sum with limits,
 `P[1,3]` → projection, `^{..}` / `_{..}` → superscript / subscript.
 
-`npm run check` validates the data (20 unique statements and 5 questions per paper, a corrected
+`npm run check` validates the data (20 unique statements and 5 questions per interro, a corrected
 version for every false statement, a worked solution for every question, markup that renders).

@@ -13,7 +13,8 @@ export function generateStaticParams() {
 
 export async function generateMetadata(props: PageProps<"/exam/[id]">): Promise<Metadata> {
   const { id } = await props.params;
-  return { title: `Mock ${id}` };
+  const index = parseExamId(id);
+  return { title: index === null ? "Interro" : `Interro ${id} · ${EXAMS[index].title}` };
 }
 
 // The params are read inside <Suspense> so navigations into this page stay instant.

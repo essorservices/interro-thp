@@ -7,11 +7,13 @@ export function StatementCorrection({ s }: { s: Statement }) {
   return (
     <div className="verdict">
       <p>
-        <b className={s.truth ? "t" : "f"}>{s.truth ? "TRUE" : "FALSE"}.</b> <M>{s.why}</M>
+        <span className={s.truth ? "tag t" : "tag f"}>{s.truth ? "TRUE" : "FALSE"}</span>
+        <M>{s.why}</M>
       </p>
       {s.fix && (
         <p className="fix">
-          <span className="lbl">Correct version</span> <M>{s.fix}</M>
+          <span className="lbl">Correct version</span>
+          <M>{s.fix}</M>
         </p>
       )}
     </div>
@@ -22,20 +24,25 @@ export function StatementCorrection({ s }: { s: Statement }) {
 export function QuestionCorrection({ q }: { q: Question }) {
   return (
     <div className="model">
-      <div className="answer">
+      <div>
         <span className="lbl">Answer</span>
-        <M className="a">{q.a}</M>
+        <M block className="model-answer">
+          {q.a}
+        </M>
       </div>
-      <div className="lbl">Solution</div>
-      <ol className="steps">
-        {q.steps.map((step, i) => (
-          <li key={i}>
-            <M>{step}</M>
-          </li>
-        ))}
-      </ol>
+      <div>
+        <span className="lbl">Solution</span>
+        <ol className="steps">
+          {q.steps.map((step, i) => (
+            <li key={i}>
+              <M>{step}</M>
+            </li>
+          ))}
+        </ol>
+      </div>
       <p className="check">
-        <span className="lbl">Check</span> <M>{q.check}</M>
+        <span className="lbl">Check</span>
+        <M>{q.check}</M>
       </p>
     </div>
   );

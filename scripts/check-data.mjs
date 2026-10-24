@@ -17,7 +17,7 @@ for (const [id, s] of Object.entries(STATEMENTS)) {
 }
 
 EXAMS.forEach((exam, i) => {
-  const name = `Mock ${i + 1}`;
+  const name = `Interro ${i + 1}`;
   if (exam.p1.length !== 20) problems.push(`${name}: ${exam.p1.length} statements instead of 20`);
   if (new Set(exam.p1).size !== exam.p1.length) problems.push(`${name}: duplicate statement`);
   for (const id of exam.p1) if (!STATEMENTS[id]) problems.push(`${name}: unknown statement ${id}`);
@@ -28,7 +28,7 @@ EXAMS.forEach((exam, i) => {
     for (const text of [q.q, q.a, q.check, ...q.steps]) checkMarkup(`${name} Q${j + 1}`, text);
   });
   const trueCount = exam.p1.filter((id) => STATEMENTS[id]?.truth).length;
-  console.log(`${name.padEnd(8)} ${String(trueCount).padStart(2)} true / 20   ${exam.focus}`);
+  console.log(`${name.padEnd(10)} ${String(trueCount).padStart(2)} true / 20   ${exam.title}`);
 });
 
 for (const g of FORMULAS) for (const item of g.items) checkMarkup(`formulas/${g.title}`, item);
